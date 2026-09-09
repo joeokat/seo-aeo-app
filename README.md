@@ -1,11 +1,7 @@
-# Signal — AEO/GEO visibility SaaS (Next.js starter)
+# Signal — SEO/AEO/GEO visibility SaaS
 
 A Next.js 14 (App Router) + Tailwind starter for the AEO tool: checks how a
 site ranks in search engines and AI assistants, scores it, and suggests fixes.
-
-This is a rebuild of the same app previously built in Nuxt/Vue — same
-features, same data model, same scan logic — after dependency issues on
-Windows made the Nuxt version not worth chasing further.
 
 ## What's real vs mocked
 

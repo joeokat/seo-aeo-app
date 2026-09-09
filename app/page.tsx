@@ -17,7 +17,7 @@ export default function Home() {
         </h1>
         <p className="font-body text-lg text-ink-soft mt-6 max-w-xl leading-relaxed">
           Signal checks whether your site shows up in Google and in ChatGPT, Perplexity,
-          Gemini and Claude &mdash; then tells you exactly what&apos;s missing.
+          Gemini and Claude, then tells you exactly what&apos;s missing.
         </p>
         <Link
           href="/dashboard"

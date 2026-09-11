@@ -28,12 +28,12 @@ export async function checkAiVisibility(
   siteName: string,
   keys: AiEngineKeys
 ): Promise<AiMentionResult[]> {
-  const engines: { name: string; run: () => Promise<{ raw: string; simulated: boolean }> }[] = [
-    { name: 'ChatGPT', run: () => askChatGPT(phrase, siteName, keys.openai) },
-    { name: 'Perplexity', run: () => askPerplexity(phrase, siteName, keys.perplexity) },
-    { name: 'Gemini', run: () => askGemini(phrase, siteName, keys.gemini) },
-    { name: 'Claude', run: () => askClaude(phrase, siteName, keys.anthropic) }
-  ]
+  const engines: { name: string; key: string; run: () => Promise<{ raw: string; simulated: boolean }> }[] = [
+    { name: 'ChatGPT', key: keys.openai, run: () => askChatGPT(phrase, siteName, keys.openai) },
+    { name: 'Perplexity', key: keys.perplexity, run: () => askPerplexity(phrase, siteName, keys.perplexity) },
+    { name: 'Gemini', key: keys.gemini, run: () => askGemini(phrase, siteName, keys.gemini) },
+    { name: 'Claude', key: keys.anthropic, run: () => askClaude(phrase, siteName, keys.anthropic) }
+  ].filter((engine) => Boolean(engine.key))
 
   const results = await Promise.all(
     engines.map(async ({ name, run }) => {

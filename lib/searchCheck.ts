@@ -6,7 +6,7 @@ export interface SearchCheckResult {
 }
 
 export async function checkSearchRank(phrase: string, domain: string, apiKey: string): Promise<SearchCheckResult> {
-  if (!apiKey) return simulateSearchRank()
+  if (!apiKey) return { rank: null, simulated: false }
 
   try {
     const url = new URL('https://serpapi.com/search')

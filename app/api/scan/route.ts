@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSite } from '@/lib/mockData'
-import { runScanForSite } from '@/lib/runScan'
+import { getProviderStatus, runScanForSite } from '@/lib/runScan'
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}))
@@ -12,5 +12,5 @@ export async function POST(req: Request) {
 
   const simulated = await runScanForSite(site)
 
-  return NextResponse.json({ site, simulated })
+  return NextResponse.json({ site, simulated, providers: getProviderStatus() })
 }

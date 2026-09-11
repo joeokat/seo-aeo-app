@@ -40,7 +40,7 @@ export default function Home() {
         <h1 className="font-display text-5xl md:text-6xl leading-[1.05] max-w-2xl">
           Know what AI says about you before your customers ask it.
         </h1>
-        <p className="font-ui text-xs text-ink-soft mt-4 mb-6">for people who want to rank their business and website online</p>
+        <p className="font-ui text-xs text-ink-soft mt-4 mb-6">for people who want to rank their website first online</p>
 
         {/* <p className="font-body text-lg text-ink-soft mt-6 max-w-xl leading-relaxed">
           Fleet Labs checks whether your site shows up in Google and in ChatGPT, Perplexity,
@@ -61,12 +61,12 @@ export default function Home() {
             disabled={loading}
             className="px-6 py-3 bg-ink text-paper font-ui text-sm disabled:opacity-50 whitespace-nowrap"
           >
-            {loading ? 'Scanning…' : 'Scan my site'}
+            {loading ? 'Scanning…' : 'Scan Site'}
           </button>
         </form>
         {error && <p className="font-ui text-xs text-signal mt-3">{error}</p>}
         <p className="font-ui text-xs text-ink-soft mt-3">
-          Fleet Labs checks whether your site shows up in Google and in ChatGPT, Perplexity, Gemini and Claude then tells you exactly what's missing.{' '}
+          Fleet Labs checks whether your site shows up in Google and in AI assistants then tells you exactly what's missing.{' '}
           <a href="/leaderboard" className="underline">See success stories</a>.
         </p>
       </header>

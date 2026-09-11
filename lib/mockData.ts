@@ -3,6 +3,7 @@
 // recommendations get computed. Swap this file for real DB queries when you
 // add persistence — the scan API route already does real (or simulated)
 // live checks, this just controls what gets stored/returned.
+import type { TechnicalAudit } from './technicalAudit'
 
 export interface TrackedPrompt {
   id: string
@@ -32,6 +33,7 @@ export interface Site {
   lastScanAt: string
   prompts: TrackedPrompt[]
   recommendations: Recommendation[]
+  technicalAudit?: TechnicalAudit
 }
 
 declare global {

@@ -5,17 +5,32 @@ import Link from 'next/link'
 import SignalMeter from '@/components/SignalMeter'
 import PromptTable from '@/components/PromptTable'
 import RecommendationList from '@/components/RecommendationList'
+import MetricCard from '@/components/MetricCard'
+import VisibilityTrend from '@/components/VisibilityTrend'
+import TechnicalAudit from '@/components/TechnicalAudit'
 import type { Site } from '@/lib/mockData'
 
 export default function SiteDetail({ params }: { params: { id: string } }) {
   const [site, setSite] = useState<Site | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [scanning, setScanning] = useState(false)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [statusMessage, setStatusMessage] = useState('Live visibility data')
+  const [audit, setAudit] = useState<Site['technicalAudit']>(undefined)
+
+  async function runTechnicalAudit(siteId: string) {
+    try {
+      const res = await fetch(`/api/sites/${siteId}/audit`, { method: 'POST' })
+      if (!res.ok) throw new Error('audit failed')
+      const result = await res.json()
+      setAudit(result.audit)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   async function runScan(siteId: string) {
     setScanning(true)
-    setNotice('Scan in progress — checking search and AI visibility.')
+    setStatusMessage('Refreshing visibility insights...')
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
@@ -25,13 +40,13 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
       if (!res.ok) throw new Error('scan failed')
       const result = await res.json()
       setSite(result.site)
-      setNotice(
+      setStatusMessage(
         result.simulated
-          ? 'Scan complete — some checks used simulated results.'
-          : 'Scan complete — live results.'
+          ? 'Updated just now · Some checks could not be refreshed.'
+          : 'Updated just now · Live visibility data.'
       )
     } catch (err) {
-      setNotice('Scan failed — check your API keys and server logs.')
+      setStatusMessage('Unable to refresh · Check your API keys and try again.')
       console.error(err)
     } finally {
       setScanning(false)
@@ -46,8 +61,12 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
       })
       .then((loadedSite) => {
         setSite(loadedSite)
+        setAudit(loadedSite.technicalAudit)
         if (loadedSite.scoreTrend.length === 0) {
           void runScan(params.id)
+        }
+        if (!loadedSite.technicalAudit) {
+          void runTechnicalAudit(params.id)
         }
       })
       .catch(() => setNotFound(true))
@@ -72,33 +91,68 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Link href="/dashboard" className="font-ui text-xs text-ink-soft">&larr; all sites</Link>
 
-        <div className="flex items-baseline justify-between mt-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mt-4 mb-8">
           <div>
             <h1 className="font-display text-3xl">{site.name}</h1>
             <p className="font-data text-xs text-ink-soft">{site.url}</p>
           </div>
-          <div className="text-right">
-            <p className="font-ui text-xs text-ink-soft mb-2">
-              last scanned {new Date(site.lastScanAt).toLocaleDateString()}
-            </p>
+          <div className="sm:text-right">
             <button
               className="px-4 py-2 bg-ink text-paper font-ui text-xs disabled:opacity-50"
               disabled={scanning}
               onClick={() => runScan(site.id)}
             >
-              {scanning ? 'Scanning…' : site.scoreTrend.length === 0 ? 'Run first scan' : 'Run scan now'}
+              {scanning ? 'Refreshing...' : 'Refresh visibility insights'}
             </button>
+            <p className="font-ui text-xs text-ink-soft mt-2">
+              Last updated {new Date(site.lastScanAt).toLocaleDateString()}
+            </p>
+            <p className={`font-ui text-xs mt-1 ${scanning ? 'text-signal' : statusMessage.startsWith('Unable') ? 'text-signal' : 'text-found'}`}>
+              {scanning ? 'Refreshing visibility insights...' : statusMessage}
+            </p>
           </div>
         </div>
 
-        {notice && <p className="font-ui text-xs text-ink-soft mb-6">{notice}</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard label="Visibility score" value={`${site.score}/100`} detail="Overall search and AI signal" />
+          <MetricCard label="Search visibility" value={`${site.searchComponent}/100`} detail="Google result coverage" />
+          <MetricCard label="AI visibility" value={`${site.aiComponent}/100`} detail="Connected AI sources only" />
+          <MetricCard
+            label="Search opportunities"
+            value={site.prompts.length}
+            detail={`${site.prompts.filter((prompt) => prompt.searchRank).length} currently ranking`}
+          />
+        </div>
 
-        <SignalMeter score={site.score} searchComponent={site.searchComponent} aiComponent={site.aiComponent} />
+        <div className="mt-4">
+          <VisibilityTrend values={site.scoreTrend} />
+        </div>
 
-        <h2 className="font-display text-xl mt-12 mb-4">Tracked prompts</h2>
+        {audit && (
+          <div className="mt-4">
+            <TechnicalAudit audit={audit} />
+            <div className="flex justify-end mt-3">
+              <button
+                type="button"
+                className="font-ui text-xs text-ink-soft underline disabled:opacity-50"
+                disabled={scanning}
+                onClick={() => runTechnicalAudit(site.id)}
+              >
+                Refresh site health
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-12">
+          <h2 className="font-display text-xl mb-4">Signal breakdown</h2>
+          <SignalMeter score={site.score} searchComponent={site.searchComponent} aiComponent={site.aiComponent} />
+        </div>
+
+        <h2 className="font-display text-xl mt-12 mb-4">Search opportunities</h2>
         <PromptTable prompts={site.prompts} />
 
-        <h2 className="font-display text-xl mt-12 mb-4">Fixes, ranked by impact</h2>
+        <h2 className="font-display text-xl mt-12 mb-4">Recommended fixes</h2>
         <RecommendationList recommendations={site.recommendations} />
       </div>
     </div>

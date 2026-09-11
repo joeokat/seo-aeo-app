@@ -14,6 +14,17 @@ function getKeys() {
   }
 }
 
+export function getProviderStatus() {
+  const keys = getKeys()
+  return [
+    { name: 'Google search', configured: Boolean(keys.serp) },
+    { name: 'ChatGPT', configured: Boolean(keys.openai) },
+    { name: 'Perplexity', configured: Boolean(keys.perplexity) },
+    { name: 'Gemini', configured: Boolean(keys.gemini) },
+    { name: 'Claude', configured: Boolean(keys.anthropic) }
+  ]
+}
+
 // Mutates the given site in place with fresh scan results. Returns whether
 // any part of the scan fell back to simulation (missing/failed API key).
 export async function runScanForSite(site: Site): Promise<boolean> {

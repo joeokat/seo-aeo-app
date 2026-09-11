@@ -42,7 +42,7 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
       setSite(result.site)
       setStatusMessage(
         result.simulated
-          ? 'Updated just now · Some checks could not be refreshed.'
+          ? 'Updated just now.'
           : 'Updated just now · Live visibility data.'
       )
     } catch (err) {
@@ -89,7 +89,6 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-paper text-ink">
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <Link href="/dashboard" className="font-ui text-xs text-ink-soft">&larr; all sites</Link>
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mt-4 mb-8">
           <div>
@@ -97,13 +96,6 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
             <p className="font-data text-xs text-ink-soft">{site.url}</p>
           </div>
           <div className="sm:text-right">
-            <button
-              className="px-4 py-2 bg-ink text-paper font-ui text-xs disabled:opacity-50"
-              disabled={scanning}
-              onClick={() => runScan(site.id)}
-            >
-              {scanning ? 'Refreshing...' : 'Refresh visibility insights'}
-            </button>
             <p className="font-ui text-xs text-ink-soft mt-2">
               Last updated {new Date(site.lastScanAt).toLocaleDateString()}
             </p>
@@ -118,14 +110,23 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
           <MetricCard label="Search visibility" value={`${site.searchComponent}/100`} detail="Google result coverage" />
           <MetricCard label="AI visibility" value={`${site.aiComponent}/100`} detail="Connected AI sources only" />
           <MetricCard
-            label="Search opportunities"
+            label="Keyword ranking"
             value={site.prompts.length}
             detail={`${site.prompts.filter((prompt) => prompt.searchRank).length} currently ranking`}
           />
+          <button
+              className="self-start sm:self-auto px-4 py-4 bg-ink text-paper font-ui mb-6 text-xs disabled:opacity-50"
+              disabled={scanning}
+              onClick={() => runScan(site.id)}
+            >
+              {scanning ? 'Refreshing...' : 'Refresh visibility insights'}
+            </button>
         </div>
 
         <div className="mt-4">
           <VisibilityTrend values={site.scoreTrend} />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
+          </div>
         </div>
 
         {audit && (
@@ -134,7 +135,7 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
             <div className="flex justify-end mt-3">
               <button
                 type="button"
-                className="font-ui text-xs text-ink-soft underline disabled:opacity-50"
+                className="self-start sm:self-auto px-4 py-4 bg-ink text-paper font-ui mb-6 text-xs disabled:opacity-50"
                 disabled={scanning}
                 onClick={() => runTechnicalAudit(site.id)}
               >
@@ -145,11 +146,11 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
         )}
 
         <div className="mt-12">
-          <h2 className="font-display text-xl mb-4">Signal breakdown</h2>
+          <h2 className="font-display text-xl mb-4">Visibility by channel</h2>
           <SignalMeter score={site.score} searchComponent={site.searchComponent} aiComponent={site.aiComponent} />
         </div>
 
-        <h2 className="font-display text-xl mt-12 mb-4">Search opportunities</h2>
+        <h2 className="font-display text-xl mt-12 mb-4">Keyword ranking</h2>
         <PromptTable prompts={site.prompts} />
 
         <h2 className="font-display text-xl mt-12 mb-4">Recommended fixes</h2>

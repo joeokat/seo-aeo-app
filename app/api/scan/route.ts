@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Site not found' }, { status: 404 })
   }
 
-  const simulated = await runScanForSite(site)
+  const result = await runScanForSite(site)
 
-  return NextResponse.json({ site, simulated, providers: getProviderStatus() })
+  return NextResponse.json({ site, ...result, providers: getProviderStatus() })
 }

@@ -27,14 +27,24 @@ export function getProviderStatus() {
 
 // Mutates the given site in place with fresh scan results. Returns whether
 // any part of the scan fell back to simulation (missing/failed API key).
-export async function runScanForSite(site: Site): Promise<boolean> {
+export interface ScanResult {
+  refreshed: boolean
+  partial: boolean
+}
+
+export async function runScanForSite(site: Site): Promise<ScanResult> {
   const keys = getKeys()
-  let anySimulated = false
+  let refreshed = false
+  let partial = false
 
   for (const prompt of site.prompts) {
     const search = await checkSearchRank(prompt.phrase, site.url, keys.serp)
-    prompt.searchRank = search.rank
-    anySimulated = anySimulated || search.simulated
+    if (search.updated) {
+      prompt.searchRank = search.rank
+      refreshed = true
+    } else if (keys.serp) {
+      partial = true
+    }
 
     const aiResults = await checkAiVisibility(prompt.phrase, site.name, {
       anthropic: keys.anthropic,
@@ -43,16 +53,18 @@ export async function runScanForSite(site: Site): Promise<boolean> {
       perplexity: keys.perplexity
     })
     prompt.aiMentions = aiResults.map(({ engine, mentioned, position }) => ({ engine, mentioned, position }))
-    anySimulated = anySimulated || aiResults.some((r) => r.simulated)
+    partial = partial || aiResults.some((r) => r.simulated)
   }
 
   const { searchComponent, aiComponent, score } = computeScoreComponents(site.prompts)
   site.searchComponent = searchComponent
   site.aiComponent = aiComponent
   site.score = score
-  site.scoreTrend = [...site.scoreTrend, score].slice(-8)
-  site.lastScanAt = new Date().toISOString()
-  site.recommendations = generateRecommendations(searchComponent, aiComponent, site.prompts)
+  if (refreshed) {
+    site.scoreTrend = [...site.scoreTrend, score].slice(-8)
+    site.lastScanAt = new Date().toISOString()
+    site.recommendations = generateRecommendations(searchComponent, aiComponent, site.prompts)
+  }
 
-  return anySimulated
+  return { refreshed, partial }
 }

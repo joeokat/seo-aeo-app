@@ -41,9 +41,11 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
       const result = await res.json()
       setSite(result.site)
       setStatusMessage(
-        result.simulated
-          ? 'Updated just now.'
-          : 'Updated just now · Live visibility data.'
+        !result.refreshed
+          ? 'Unable to update · Previous results kept.'
+          : result.partial
+            ? 'Updated just now · Some sources unavailable.'
+            : 'Updated just now · Live visibility data.'
       )
     } catch (err) {
       setStatusMessage('Unable to refresh · Check your API keys and try again.')

@@ -7,6 +7,17 @@ export interface ProviderResult {
   simulated: boolean
 }
 
+export async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export async function simulateAnswer(engine: string, prompt: string, siteName: string): Promise<ProviderResult> {
   const mentioned = Math.random() > 0.5
   const raw = mentioned

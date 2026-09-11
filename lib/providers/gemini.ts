@@ -1,11 +1,11 @@
 import type { ProviderResult } from './shared'
-import { simulateAnswer } from './shared'
+import { fetchWithTimeout, simulateAnswer } from './shared'
 
 export async function askGemini(prompt: string, siteName: string, apiKey: string): Promise<ProviderResult> {
   if (!apiKey) return simulateAnswer('Gemini', prompt, siteName)
 
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',

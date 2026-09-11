@@ -1,11 +1,11 @@
 import type { ProviderResult } from './shared'
-import { simulateAnswer } from './shared'
+import { fetchWithTimeout, simulateAnswer } from './shared'
 
 export async function askClaude(prompt: string, siteName: string, apiKey: string): Promise<ProviderResult> {
   if (!apiKey) return simulateAnswer('Claude', prompt, siteName)
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

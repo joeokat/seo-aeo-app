@@ -9,46 +9,68 @@ import type { Site } from '@/lib/mockData'
 
 export default function SiteDetail({ params }: { params: { id: string } }) {
   const [site, setSite] = useState<Site | null>(null)
+  const [notFound, setNotFound] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetch(`/api/sites/${params.id}`)
-      .then((r) => r.json())
-      .then(setSite)
-  }, [params.id])
-
-  async function runScan() {
-    if (!site) return
+  async function runScan(siteId: string) {
     setScanning(true)
-    setNotice(null)
+    setNotice('Scan in progress — checking search and AI visibility.')
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ siteId: site.id })
+        body: JSON.stringify({ siteId })
       })
+      if (!res.ok) throw new Error('scan failed')
       const result = await res.json()
       setSite(result.site)
       setNotice(
         result.simulated
-          ? 'Scan complete — running in simulated mode (no API keys set yet).'
+          ? 'Scan complete — some checks used simulated results.'
           : 'Scan complete — live results.'
       )
     } catch (err) {
-      setNotice('Scan failed — check server logs.')
+      setNotice('Scan failed — check your API keys and server logs.')
       console.error(err)
     } finally {
       setScanning(false)
     }
   }
 
+  useEffect(() => {
+    fetch(`/api/sites/${params.id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found')
+        return r.json()
+      })
+      .then((loadedSite) => {
+        setSite(loadedSite)
+        if (loadedSite.scoreTrend.length === 0) {
+          void runScan(params.id)
+        }
+      })
+      .catch(() => setNotFound(true))
+  }, [params.id])
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-paper text-ink">
+        <div className="max-w-4xl mx-auto px-6 py-16">
+          <p className="font-body text-sm">
+            Couldn&apos;t find that site. <Link href="/dashboard" className="underline">Back to your sites</Link>.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (!site) return null
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-body">
+    <div className="min-h-screen bg-paper text-ink">
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <Link href="/dashboard" className="font-data text-xs text-ink-soft">&larr; all sites</Link>
+        <Link href="/dashboard" className="font-ui text-xs text-ink-soft">&larr; all sites</Link>
 
         <div className="flex items-baseline justify-between mt-4 mb-8">
           <div>
@@ -56,20 +78,20 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
             <p className="font-data text-xs text-ink-soft">{site.url}</p>
           </div>
           <div className="text-right">
-            <p className="font-body text-xs text-ink-soft mb-2">
+            <p className="font-ui text-xs text-ink-soft mb-2">
               last scanned {new Date(site.lastScanAt).toLocaleDateString()}
             </p>
             <button
-              className="px-4 py-2 bg-ink text-paper font-body text-xs disabled:opacity-50"
+              className="px-4 py-2 bg-ink text-paper font-ui text-xs disabled:opacity-50"
               disabled={scanning}
-              onClick={runScan}
+              onClick={() => runScan(site.id)}
             >
-              {scanning ? 'Scanning…' : 'Run scan now'}
+              {scanning ? 'Scanning…' : site.scoreTrend.length === 0 ? 'Run first scan' : 'Run scan now'}
             </button>
           </div>
         </div>
 
-        {notice && <p className="font-body text-xs text-ink-soft mb-6">{notice}</p>}
+        {notice && <p className="font-ui text-xs text-ink-soft mb-6">{notice}</p>}
 
         <SignalMeter score={site.score} searchComponent={site.searchComponent} aiComponent={site.aiComponent} />
 

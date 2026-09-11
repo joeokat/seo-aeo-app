@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './providers/shared'
+
 export interface SearchCheckResult {
   rank: number | null
   simulated: boolean
@@ -12,7 +14,7 @@ export async function checkSearchRank(phrase: string, domain: string, apiKey: st
     url.searchParams.set('q', phrase)
     url.searchParams.set('api_key', apiKey)
 
-    const res = await fetch(url.toString())
+    const res = await fetchWithTimeout(url.toString())
     if (!res.ok) throw new Error(`SerpAPI returned ${res.status}`)
 
     const data = await res.json()

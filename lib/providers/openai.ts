@@ -1,11 +1,11 @@
 import type { ProviderResult } from './shared'
-import { simulateAnswer } from './shared'
+import { fetchWithTimeout, simulateAnswer } from './shared'
 
 export async function askChatGPT(prompt: string, siteName: string, apiKey: string): Promise<ProviderResult> {
   if (!apiKey) return simulateAnswer('ChatGPT', prompt, siteName)
 
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

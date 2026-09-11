@@ -18,7 +18,8 @@ const config: Config = {
       fontFamily: {
         display: ['Fraunces', 'serif'],
         body: ['"IBM Plex Sans"', 'sans-serif'],
-        data: ['"IBM Plex Mono"', 'monospace']
+        data: ['"IBM Plex Mono"', 'monospace'],
+        ui: ['Poppins', 'sans-serif']
       }
     }
   },

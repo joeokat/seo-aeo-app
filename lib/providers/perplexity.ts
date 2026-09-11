@@ -1,11 +1,11 @@
 import type { ProviderResult } from './shared'
-import { simulateAnswer } from './shared'
+import { fetchWithTimeout, simulateAnswer } from './shared'
 
 export async function askPerplexity(prompt: string, siteName: string, apiKey: string): Promise<ProviderResult> {
   if (!apiKey) return simulateAnswer('Perplexity', prompt, siteName)
 
   try {
-    const res = await fetch('https://api.perplexity.ai/chat/completions', {
+    const res = await fetchWithTimeout('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

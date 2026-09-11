@@ -34,7 +34,12 @@ export interface Site {
   recommendations: Recommendation[]
 }
 
-export const sites: Site[] = [
+declare global {
+  // Keep the development mock store shared by Next.js route bundles.
+  var __fleetSites: Site[] | undefined
+}
+
+export const sites: Site[] = globalThis.__fleetSites ?? (globalThis.__fleetSites = [
   {
     id: 'nova-fit',
     url: 'novafit.app',
@@ -146,8 +151,56 @@ export const sites: Site[] = [
       }
     ]
   }
-]
+])
 
 export function getSite(id: string) {
   return sites.find((s) => s.id === id) ?? null
+}
+
+function deriveName(hostname: string) {
+  const label = hostname.replace(/^www\./, '').split('.')[0]
+  return label
+    .split(/[-_]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+export function createSite(rawUrl: string): Site {
+  const withScheme = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`
+  const parsed = new URL(withScheme)
+  const hostname = parsed.hostname.replace(/^www\./, '')
+  const name = deriveName(hostname)
+  const id = `${hostname.replace(/\./g, '-')}-${Math.random().toString(36).slice(2, 6)}`
+
+  const engines = ['ChatGPT', 'Perplexity', 'Gemini', 'Claude']
+
+  const site: Site = {
+    id,
+    url: hostname,
+    name,
+    plan: 'free',
+    score: 0,
+    scoreTrend: [],
+    searchComponent: 0,
+    aiComponent: 0,
+    lastScanAt: new Date().toISOString(),
+    prompts: [
+      {
+        id: `p-${Math.random().toString(36).slice(2, 8)}`,
+        phrase: `${name} reviews`,
+        searchRank: null,
+        aiMentions: engines.map((engine) => ({ engine, mentioned: false, position: null }))
+      },
+      {
+        id: `p-${Math.random().toString(36).slice(2, 8)}`,
+        phrase: `best alternative to ${name}`,
+        searchRank: null,
+        aiMentions: engines.map((engine) => ({ engine, mentioned: false, position: null }))
+      }
+    ],
+    recommendations: []
+  }
+
+  sites.push(site)
+  return site
 }

@@ -121,7 +121,7 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
               disabled={scanning}
               onClick={() => runScan(site.id)}
             >
-              {scanning ? 'Refreshing...' : 'Refresh visibility insights'}
+              {scanning ? 'Refreshing...' : 'Refresh insights'}
             </button>
             </div>
 

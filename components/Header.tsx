@@ -29,7 +29,7 @@ export default function Header() {
           </Link>
           
           <Link href="/#scan" className="px-4 py-2 bg-ink text-paper">
-            Track Site
+            Scan Site
           </Link>
         </nav>
 
@@ -61,7 +61,7 @@ export default function Header() {
             </Link>
 
             <Link href="/#scan" className="mt-2 px-4 py-3 text-center bg-ink text-paper" onClick={closeMenu}>
-              Rank site
+              Scan site
             </Link>
           </div>
         </nav>

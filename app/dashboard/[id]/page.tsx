@@ -114,6 +114,8 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
             value={site.prompts.length}
             detail={`${site.prompts.filter((prompt) => prompt.searchRank).length} currently ranking`}
           />
+        </div>
+        <div className="flex justify-end mt-3">
           <button
               className="self-start sm:self-auto px-4 py-4 bg-ink text-paper font-ui mb-6 text-xs disabled:opacity-50"
               disabled={scanning}
@@ -121,7 +123,7 @@ export default function SiteDetail({ params }: { params: { id: string } }) {
             >
               {scanning ? 'Refreshing...' : 'Refresh visibility insights'}
             </button>
-        </div>
+            </div>
 
         <div className="mt-4">
           <VisibilityTrend values={site.scoreTrend} />
